@@ -27,7 +27,6 @@ var width = 400,
 
 d3.json('data/combined.geojson', function(err, data) {
 	
-	/* --- to find MaxValue of S1 */
 	var S1Arr = []
 	data.features.forEach(function(d) {
 		S1Arr.push(d.properties.S1);
@@ -41,7 +40,7 @@ d3.json('data/combined.geojson', function(err, data) {
 		.append("path")
 		.attr("d", path)
 		.style("stroke", "#fff")
-		.style("stroke-width", "1")
+		.style("stroke-width", "0.5")
 		.style("fill", function(d) {
 			return color(d.properties.S1);
 		})
