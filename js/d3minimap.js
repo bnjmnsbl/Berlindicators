@@ -10,7 +10,14 @@ var projection = d3.geoMercator()
 	path = d3.geoPath()
 		.projection(projection),
 
-		color = d3.scaleLinear().range(["white", "red"]).domain(0.00, 15.00);
+		color = d3.scaleLinear().range(["white", "red"]).domain(0.00, 15.00),
+
+		tooltip = d3.select('body').append('div')
+		.attr("class", "tooltip")
+		.style("opacity", 0)
+		.style('z-index', '10');
+
+		
 
 d3.queue()
 	.defer(d3.json, 'data/combined.geojson')
@@ -18,10 +25,11 @@ d3.queue()
 
 function visualize(error, data) {
 	var visWrapper = d3.select('#vis');
-	
+	var IndicatorNames = ["Anteil Arbeitslose (SGBII und III)", "Anteil Langzeitarbeitslose", "Anteil Transferbezieher (SGB II und XII)", "Anteil Transferbezieher (SGB II) unter 15 Jahre"]
+
 	for (i=0; i<count; i++) {
-		console.log(visWrapper);
-		var legend = "Map Nr. " + (i+1);
+
+		var legend = IndicatorNames[i];
 		
 		var wrapper = visWrapper
 			.append('div')
@@ -29,25 +37,27 @@ function visualize(error, data) {
 			.style('height', height + 'px');
 			
 		
-		createMap(wrapper, legend, data)
+		createMap(wrapper, legend, data, i)
 	}
 }
 
-function createMap(wrapper, legend, data) {
+function createMap(wrapper, legend, data, i) {
+
+	var IndicatorKeys = ["S1", "S2", "S3", "S4"]
+
 	wrapper.append('p')
 		.text(legend)
 		.attr('class', 'legend');
 
-	var S1Arr = []
+	var indexArr = []
 	data.features.forEach(function(d) {
-		S1Arr.push(d.properties.S1);
+		indexArr.push(d.properties[IndicatorKeys[i]]);
 	})
-	color.domain([d3.min(S1Arr), d3.max(S1Arr)])
+	color.domain([d3.min(indexArr), d3.max(indexArr)])
 	
 	
 	var svg = wrapper.append('svg')
 		
-
 		svg.selectAll("path")
 		.data(data.features)
 		.enter()
@@ -56,6 +66,22 @@ function createMap(wrapper, legend, data) {
 		.style("stroke", "#fff")
 		.style("stroke-width", "0.5")
 		.style("fill", function(d) {
-			return color(d.properties.S1);
+			return color(d.properties[IndicatorKeys[i]]);
 		})
+		.on('mouseover', function(d) {
+			tooltip.transition()
+				.duration(100)
+				.style("opacity", .9);
+
+
+			tooltip.html("<span class='year'>" + d.properties.Name + ": " + (d.properties[IndicatorKeys[i]]==0 ? "keine Daten" : d.properties[IndicatorKeys[i]] + "%"))
+				.style("left", (d3.event.pageX) + "px")
+				.style("top", (d3.event.pageY) + "px");
+		})
+		 .on("mouseout", function(d) {       
+            tooltip.transition()        
+                .duration(500)      
+                .style("opacity", 0);   
+        });
 }
+

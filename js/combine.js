@@ -1,6 +1,6 @@
 /* This script is used to combine the GeoJSON of LOR-PR with the CSV from Index.CSV
 	I used this upfront to have a workable dataset, no need to include it in your site. 
-	 
+*/	 
 
 d3.queue()
 	.defer(d3.csv, '../data/IndexInd.csv')
@@ -10,12 +10,7 @@ d3.queue()
 function combine(error, index, geo) {
 	if (error) {console.log(error);}
 
-	/*console.dir(index)
-	console.log(index[0].Name)
-	console.log("Geo ");
-	console.log(geo.features[0].properties.Name)
-	console.dir(geo)
-*/
+
 	geo.features.forEach(function(d) {
 		delete d.properties.description;
 		for (var i = 0; i < index.length; i++) {
@@ -36,5 +31,5 @@ function combine(error, index, geo) {
 		}
 
 	})
-	temptest = JSON.stringify(geo);
+	var temp = JSON.stringify(geo);
 }
