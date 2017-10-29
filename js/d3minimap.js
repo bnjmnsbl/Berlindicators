@@ -2,6 +2,9 @@ var width = 400,
 	height = 350;
 	count = 4;
 
+
+var fields = ["S1", "S2", "S3", "S4"];
+
 var projection = d3.geoMercator()
 		.scale(30000)
 		.center([13.403528,52.540212])
@@ -24,8 +27,25 @@ d3.queue()
 	.await(visualize)
 
 function visualize(error, data) {
+	
+	var dropdownMenu = d3.select("#dropdownMenu");
+
 	var visWrapper = d3.select('#vis');
 	var IndicatorNames = ["Anteil Arbeitslose (SGBII und III)", "Anteil Langzeitarbeitslose", "Anteil Transferbezieher (SGB II und XII)", "Anteil Transferbezieher (SGB II) unter 15 Jahre"]
+
+	dropdownMenu
+		.append("select")
+		.selectAll("option")
+		.data(fields)
+		.enter()
+		.append("option")
+		.attr("value", function(d) {
+			return d;
+		})
+		.text(function(d) {
+			return d;
+		})	
+
 
 	for (i=0; i<count; i++) {
 
