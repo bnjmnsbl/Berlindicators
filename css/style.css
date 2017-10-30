@@ -1,36 +1,44 @@
 html, body {
+	height: 100%;
 	margin: 0;
 	padding: 0;
+	font-family: sans-serif;
 }
 
 
 h1 {
-	font-family: sans-serif;
+	
 	text-align: center;
 }
 
+h2 {
+	font-size: 1em;
+}
 #wrapper {
-	margin: 0 auto;
-	max-width: 960px;
-	width: 100%;
-	border: 1px solid;
+	position: relative;
+	width: 50%;
+	
 }
 
-
 #dropdownMenu {
-   
-   width: 30em;
-   }
+   position: absolute;
+   left: 76%;
+   width: 40em;
+}
 
 
 #vis {
-	margin: auto;
-	align-content: center;
+	
 }
 
 #vis svg {
-	width: 600px;
-	height: 600px;
+	position: absolute;
+	margin: 0 auto;
+	top: 30px;
+	width: 50%;
+	height: 50%;
+
+	
 }
 
 #vis p.legend {
@@ -38,13 +46,10 @@ h1 {
 	font-size: 11px;
 }
 
-
 .tooltip {   
   position: absolute;           
   text-align: center;           
-  top: 200px;
-  /*width: 120px;                  
-  height: 80px;            */     
+  top: 200px;   
   padding: 1px;             
   font: 12px sans-serif;        
   background: white;   
@@ -54,21 +59,35 @@ h1 {
 }
 
 #legend {
-        width: 500px;
-        position: absolute;
-        left: 480px;
-        top: 550px;
-    }
+    position: absolute;
+    left: 480px;
+    top: 550px;
+}
 
-    li.key {
-        float: left;
-        border-top-width: 15px;
-        border-top-style: solid;
-        font-family: "Oxygen";
-        color: #666;
-        font-size: 16px;
-        width: 10%;
-        padding-left: 0;
-        padding-right: 0;
-        list-style:none;
-    }
+li.key {
+    float: left;
+    border-top-width: 15px;
+    border-top-style: solid;
+    font-family: "Oxygen";
+    color: #666;
+    font-size: 16px;
+    width: 10%;
+    padding-left: 0;
+    padding-right: 0;
+    list-style:none;
+}
+
+#topList {
+	position: relative;
+	width: 250px;
+	left: 700px;
+	top: 50px;
+
+}
+
+#topList th, td {
+	padding: 5px;
+	text-align: left;
+	border-bottom: 1px solid #ddd;
+}
+

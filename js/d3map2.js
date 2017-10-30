@@ -3,13 +3,12 @@
 nicer font
 Headline
 Legend
-Graph
 position dropdown
 
 
 */
 
-var width = 960,
+var width = 720,
 	height = 550;
 	count = 4;
 
@@ -68,16 +67,50 @@ function updateMap(i) {
 
 	color.domain([d3.min(indexArr), d3.max(indexArr)])
 	
-	var sortedArr = data.features.sort(function(x, y) {
-		return d3.ascending(x.properties[IndicatorKeys[i]], y.properties[IndicatorKeys[i]])
-	})
-
 	
-	console.log("Top1 is " + sortedArr[sortedArr.length-1].properties.Name + " with " + sortedArr[sortedArr.length-1].properties[IndicatorKeys[i]]);
-	console.log("Top2 is " + sortedArr[sortedArr.length-2].properties.Name + " with " + sortedArr[sortedArr.length-2].properties[IndicatorKeys[i]]);
-	console.log("Top3 is " + sortedArr[sortedArr.length-3].properties.Name + " with " + sortedArr[sortedArr.length-3].properties[IndicatorKeys[i]]);
+	function createTop3(columns) {
+
+	var fields = [];
+	var sortedArr = data.features.sort(function(x, y) {
+		return d3.descending(x.properties[IndicatorKeys[i]], y.properties[IndicatorKeys[i]])
+	}).slice(0,3)
 
 
+	d3.select('#topList')
+    .selectAll('table')
+    .remove();
+
+    var top3 = d3.select('#topList')
+	    .append('table')
+	   
+	var thead = top3.append('thead');
+	var tbody = top3.append('tbody');
+
+	thead
+		.append('th')
+		.text("Planungsraum");
+
+	thead.append('th').text("%");		
+	var rows = tbody.selectAll('tr')
+		.data(sortedArr)
+		.enter()
+		.append('tr')
+
+	var cells = rows.selectAll('td')
+		.data(function(row){
+			return columns.map(function(column) {
+				return {column: column, value: row.properties[column]};
+			});
+		})
+		.enter()
+		.append('td')
+			.text(function(d) {return d.value; });
+
+		return top3;
+
+	}
+
+	createTop3(["Name", IndicatorKeys[i]]);
 
 		d3.select("g")
 			.selectAll("path")
@@ -144,8 +177,6 @@ function updateMap(i) {
 
 updateMap(0)
 // Dropdown event listener
-
-
 dropdownMenu.on('change', function(){
 	
 	var selectedIndicator = d3.select(this)
