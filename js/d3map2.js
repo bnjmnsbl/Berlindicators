@@ -31,8 +31,8 @@ var projection = d3.geoMercator()
 	.defer(d3.json, 'data/combined.geojson')
 	.await(visualize)*/
 
-var IndicatorKeys = ["S1", "S2", "S3", "S4"];
-var IndicatorNames = ["Anteil Arbeitslose (SGBII und III)", "Anteil Langzeitarbeitslose", "Anteil Transferbezieher (SGB II und XII)", "Anteil Transferbezieher (SGB II) unter 15 Jahre"];	
+var IndicatorKeys = ["S1", "S2", "S3", "S4", "D1", "D2", "D3", "D4"];
+var IndicatorNames = ["Anteil Arbeitslose (SGBII und III)", "Anteil Langzeitarbeitslose", "Anteil Transferbezieher (SGB II und XII)", "Anteil Transferbezieher (SGB II) unter 15 Jahre", "Veränderung Anteil Arbeitslose (SGBII und III)", "Veränderung Anteil Langzeitarbeitslose", "Veränderung Anteil Transferbezieher (SGB II und XII)", "Veränderung Anteil Transferbezieher (SGB II) unter 15 Jahre"];	
 
 var dropdownMenu = d3.select("#dropdownMenu");
 		
