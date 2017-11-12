@@ -5,13 +5,16 @@ Headline
 Legend
 position dropdown
 
+join csv to topojson on the fly (i.e. like this: http://bl.ocks.org/phil-pedruco/7557092)
+use colorbrewer ordinal scale (i.e. like this: http://bl.ocks.org/phil-pedruco/7557092)
+
+
 
 */
 
 var width = 720,
 	height = 550;
-	count = 4;
-
+	
 var projection = d3.geoMercator()
 		.scale(50000)
 		.center([13.403528,52.540212])
@@ -20,19 +23,19 @@ var projection = d3.geoMercator()
 	path = d3.geoPath()
 		.projection(projection),
 
-		color = d3.scaleLinear().range(["white", "red"]).domain(0.00, 15.00),
+	color = d3.scaleLinear().range(["white", "red"]),
 
-		tooltip = d3.select('body').append('div')
+	tooltip = d3.select('body').append('div')
 		.attr("class", "tooltip")
 		.style("opacity", 0)
 		.style('z-index', '10');
 
-/*d3.queue()
-	.defer(d3.json, 'data/combined.geojson')
-	.await(visualize)*/
 
-var IndicatorKeys = ["S1", "S2", "S3", "S4", "D1", "D2", "D3", "D4"];
+var lookup = {};
+
+var IndicatorKeys = ["S1", "S2", "S3", "S4", "D1", "D2", "D3", "D4" ];
 var IndicatorNames = ["Anteil Arbeitslose (SGBII und III)", "Anteil Langzeitarbeitslose", "Anteil Transferbezieher (SGB II und XII)", "Anteil Transferbezieher (SGB II) unter 15 Jahre", "Veränderung Anteil Arbeitslose (SGBII und III)", "Veränderung Anteil Langzeitarbeitslose", "Veränderung Anteil Transferbezieher (SGB II und XII)", "Veränderung Anteil Transferbezieher (SGB II) unter 15 Jahre"];	
+var activeInd = 0;
 
 var dropdownMenu = d3.select("#dropdownMenu");
 		
@@ -56,25 +59,52 @@ var svg = d3.select('#vis')
 		.style('height', height + 'px')
 		.append('g');	
 
-function updateMap(i) {
-	
-	d3.json('data/combined.geojson', function(err, data) {
+function loadFiles() {
+	d3.queue()
+	.defer(d3.json, 'data/PLR-topo.json')
+	.defer(d3.csv, 'data/IndexInd.csv')
+	.await(updateMap)
+}
 
-	var indexArr = [];
-	data.features.forEach(function(d) {
-		indexArr.push(d.properties[IndicatorKeys[i]]);
+function updateMap(error, geodata, csvdata) {
+	
+	// Fix CSV data
+	csvdata.forEach(function(d) {
+				
+				d.Nummer = +(d.Nummer); 
+				d.EW = +(d.EW);
+				d.S1 = +(d.S1.replace(/,/g, '.'));
+				d.S2 = +(d.S2.replace(/,/g, '.'));
+				d.S3 = +(d.S3.replace(/,/g, '.'));
+				d.S4 = +(d.S4.replace(/,/g, '.'));
+				d.D1 = +(d.D1.replace(/,/g, '.'));
+				d.D2 = +(d.D2.replace(/,/g, '.'));
+				d.D3 = +(d.D3.replace(/,/g, '.'));
+				d.D4 = +(d.D4.replace(/,/g, '.'));
 	})
 
-	color.domain([d3.min(indexArr), d3.max(indexArr)])
-	
+		// CREATE LOOKUP OBJECT
+	for (var i = 0; i < csvdata.length; i++) {
+		lookup[csvdata[i].Nummer] = csvdata[i];
+	}
+
+	lookup.getAverage = function(key) { //this works but is still unused
+		return (this["0"][key]);
+	}
+
+
+	color.domain([d3.min(csvdata, function(d) {return d[IndicatorKeys[activeInd]]}), d3.max(csvdata, function(d) {return d[IndicatorKeys[activeInd]]})]);
+
 	
 	function createTop3(columns) {
-
+/*
 	var fields = [];
-	var sortedArr = data.features.sort(function(x, y) {
+	var sortedArr = csvdata.features.sort(function(x, y) {
 		return d3.descending(x.properties[IndicatorKeys[i]], y.properties[IndicatorKeys[i]])
 	}).slice(0,3)
-
+*/
+	var top3Arr = csvdata.sort(function(a,b) {return a[IndicatorKeys[activeInd]]-b[IndicatorKeys[activeInd]]}).slice(csvdata.length-3, csvdata.length).reverse();
+	
 
 	d3.select('#topList')
     .selectAll('table')
@@ -89,17 +119,24 @@ function updateMap(i) {
 	thead
 		.append('th')
 		.text("Planungsraum");
-
-	thead.append('th').text("%");		
+		
+	thead
+		.append('th')
+		.text("%");		
+	
 	var rows = tbody.selectAll('tr')
-		.data(sortedArr)
+		.data(top3Arr)
 		.enter()
 		.append('tr')
-
+			.on('mouseover', function() {
+				d3.select(this).style('background-color', 'yellow');
+				d3.select
+			})
+			.on('mouseout', function() {d3.select(this).style('background-color', 'white');})
 	var cells = rows.selectAll('td')
 		.data(function(row){
 			return columns.map(function(column) {
-				return {column: column, value: row.properties[column]};
+				return {column: column, value: row[column]};
 			});
 		})
 		.enter()
@@ -110,28 +147,31 @@ function updateMap(i) {
 
 	}
 
-	createTop3(["Name", IndicatorKeys[i]]);
-
+	createTop3(["Name", IndicatorKeys[activeInd]]);
+	
 		d3.select("g")
 			.selectAll("path")
 			.remove()
 
 		var map = svg.selectAll("path")
-		.data(data.features)
+		.data(topojson.feature(geodata, geodata.objects.Planungsraum).features)
 		.enter()
 		.append("path")
 		.attr("d", path)
 		.style("stroke", "#fff")
 		.style("stroke-width", "0.5")
 		.style("fill", function(d) {
-			return color(d.properties[IndicatorKeys[i]]);
+			d.properties.SCHLUESSEL = +(d.properties.SCHLUESSEL);
+			
+			return color(lookup[d.properties.SCHLUESSEL].S1);
+			
 		})
 		.on('mouseover', function(d) {
 			tooltip.transition()
 				.duration(100)
 				.style("opacity", .9);
 
-			tooltip.html("<span class='year'>" + d.properties.Name + ": " + (d.properties[IndicatorKeys[i]]==0 ? "keine Daten" : d.properties[IndicatorKeys[i]] + "%"))
+			tooltip.html("<span class='year'>" + lookup[d.properties.SCHLUESSEL].Name + ": " + (lookup[d.properties.SCHLUESSEL].S1))//(d.properties[IndicatorKeys[activeInd]]==0 ? "keine Daten" : d.properties[IndicatorKeys[activeInd]] + "%"))
 				.style("left", (d3.event.pageX) + "px")
 				.style("top", (d3.event.pageY) + "px");
 
@@ -146,7 +186,7 @@ function updateMap(i) {
         	d3.select(this)
 				.style("stroke-width", "0.5");
         });
-	});
+	};
 
 
 
@@ -173,14 +213,16 @@ function updateMap(i) {
         });
 
 */
-}
 
-updateMap(0)
+
+loadFiles()
 // Dropdown event listener
 dropdownMenu.on('change', function(){
 	
 	var selectedIndicator = d3.select(this)
        	.select("select")
        	.property("value");
-   	updateMap(IndicatorKeys.indexOf(selectedIndicator))
+
+   	activeInd = IndicatorKeys.indexOf(selectedIndicator);
+   	loadFiles();
 	});
