@@ -68,10 +68,31 @@ function loadFiles() {
 
 function updateMap(error, geodata, csvdata) {
 	
-	// Fix CSV data
+geodata.objects.Planungsraum.geometries.forEach(function(d) {
+	d.properties.SCHLUESSEL = +(d.properties.SCHLUESSEL)	
+
+	csvdata.forEach(function(e) {
+	
+		if (d.properties.SCHLUESSEL === +(e.Nummer)){
+			
+			d.properties.Name = e.Name;	
+			d.properties.EW = +(e.EW);
+			d.properties.S1 = +(e.S1.replace(/,/g, '.'));
+			d.properties.S2 = +(e.S2.replace(/,/g, '.'));
+			d.properties.S3 = +(e.S3.replace(/,/g, '.'));
+			d.properties.S4 = +(e.S4.replace(/,/g, '.'));
+			d.properties.D1 = +(e.D1.replace(/,/g, '.'));
+			d.properties.D2 = +(e.D2.replace(/,/g, '.'));
+			d.properties.D3 = +(e.D3.replace(/,/g, '.'));
+			d.properties.D4 = +(e.D4.replace(/,/g, '.'));
+			}
+		})
+	});
+
+	//this should go after fix
 	csvdata.forEach(function(d) {
 				
-				d.Nummer = +(d.Nummer); 
+				d.Nummer = +(d.Nummer);		
 				d.EW = +(d.EW);
 				d.S1 = +(d.S1.replace(/,/g, '.'));
 				d.S2 = +(d.S2.replace(/,/g, '.'));
@@ -81,8 +102,8 @@ function updateMap(error, geodata, csvdata) {
 				d.D2 = +(d.D2.replace(/,/g, '.'));
 				d.D3 = +(d.D3.replace(/,/g, '.'));
 				d.D4 = +(d.D4.replace(/,/g, '.'));
+				
 	})
-
 		// CREATE LOOKUP OBJECT
 	for (var i = 0; i < csvdata.length; i++) {
 		lookup[csvdata[i].Nummer] = csvdata[i];
@@ -147,8 +168,9 @@ function updateMap(error, geodata, csvdata) {
 
 	}
 
+
 	createTop3(["Name", IndicatorKeys[activeInd]]);
-	
+		
 		d3.select("g")
 			.selectAll("path")
 			.remove()
@@ -161,9 +183,8 @@ function updateMap(error, geodata, csvdata) {
 		.style("stroke", "#fff")
 		.style("stroke-width", "0.5")
 		.style("fill", function(d) {
-			d.properties.SCHLUESSEL = +(d.properties.SCHLUESSEL);
-			
-			return color(lookup[d.properties.SCHLUESSEL].S1);
+						
+			return color(d.properties[IndicatorKeys[activeInd]]);
 			
 		})
 		.on('mouseover', function(d) {
@@ -171,7 +192,7 @@ function updateMap(error, geodata, csvdata) {
 				.duration(100)
 				.style("opacity", .9);
 
-			tooltip.html("<span class='year'>" + lookup[d.properties.SCHLUESSEL].Name + ": " + (lookup[d.properties.SCHLUESSEL].S1))//(d.properties[IndicatorKeys[activeInd]]==0 ? "keine Daten" : d.properties[IndicatorKeys[activeInd]] + "%"))
+			tooltip.html("<span class='year'>" + d.properties.Name + ": " + (d.properties[IndicatorKeys[activeInd]]==0 ? "keine Daten" : d.properties[IndicatorKeys[activeInd]] + "%"))
 				.style("left", (d3.event.pageX) + "px")
 				.style("top", (d3.event.pageY) + "px");
 
