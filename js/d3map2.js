@@ -5,10 +5,7 @@ Headline
 Legend
 position dropdown
 
-join csv to topojson on the fly (i.e. like this: http://bl.ocks.org/phil-pedruco/7557092)
 use colorbrewer ordinal scale (i.e. like this: http://bl.ocks.org/phil-pedruco/7557092)
-
-
 
 */
 
@@ -29,9 +26,6 @@ var projection = d3.geoMercator()
 		.attr("class", "tooltip")
 		.style("opacity", 0)
 		.style('z-index', '10');
-
-
-var lookup = {};
 
 var IndicatorKeys = ["S1", "S2", "S3", "S4", "D1", "D2", "D3", "D4" ];
 var IndicatorNames = ["Anteil Arbeitslose (SGBII und III)", "Anteil Langzeitarbeitslose", "Anteil Transferbezieher (SGB II und XII)", "Anteil Transferbezieher (SGB II) unter 15 Jahre", "Veränderung Anteil Arbeitslose (SGBII und III)", "Veränderung Anteil Langzeitarbeitslose", "Veränderung Anteil Transferbezieher (SGB II und XII)", "Veränderung Anteil Transferbezieher (SGB II) unter 15 Jahre"];	
@@ -89,43 +83,20 @@ geodata.objects.Planungsraum.geometries.forEach(function(d) {
 		})
 	});
 
-	//this should go after fix
-	csvdata.forEach(function(d) {
-				
-				d.Nummer = +(d.Nummer);		
-				d.EW = +(d.EW);
-				d.S1 = +(d.S1.replace(/,/g, '.'));
-				d.S2 = +(d.S2.replace(/,/g, '.'));
-				d.S3 = +(d.S3.replace(/,/g, '.'));
-				d.S4 = +(d.S4.replace(/,/g, '.'));
-				d.D1 = +(d.D1.replace(/,/g, '.'));
-				d.D2 = +(d.D2.replace(/,/g, '.'));
-				d.D3 = +(d.D3.replace(/,/g, '.'));
-				d.D4 = +(d.D4.replace(/,/g, '.'));
-				
-	})
-		// CREATE LOOKUP OBJECT
-	for (var i = 0; i < csvdata.length; i++) {
-		lookup[csvdata[i].Nummer] = csvdata[i];
-	}
-
-	lookup.getAverage = function(key) { //this works but is still unused
-		return (this["0"][key]);
-	}
+	color.domain(
+		[d3.min(geodata.objects.Planungsraum.geometries, function(d) {
+			return d.properties[IndicatorKeys[activeInd]];
+		}), 
+		d3.max(geodata.objects.Planungsraum.geometries, function(d) {
+			return d.properties[IndicatorKeys[activeInd]]
+		})
+		]
+		);
 
 
-	color.domain([d3.min(csvdata, function(d) {return d[IndicatorKeys[activeInd]]}), d3.max(csvdata, function(d) {return d[IndicatorKeys[activeInd]]})]);
-
-	
 	function createTop3(columns) {
-/*
-	var fields = [];
-	var sortedArr = csvdata.features.sort(function(x, y) {
-		return d3.descending(x.properties[IndicatorKeys[i]], y.properties[IndicatorKeys[i]])
-	}).slice(0,3)
-*/
-	var top3Arr = csvdata.sort(function(a,b) {return a[IndicatorKeys[activeInd]]-b[IndicatorKeys[activeInd]]}).slice(csvdata.length-3, csvdata.length).reverse();
-	
+
+	var top3Arr = geodata.objects.Planungsraum.geometries.sort(function(a,b) {return a.properties[IndicatorKeys[activeInd]]-b.properties[IndicatorKeys[activeInd]]}).slice(geodata.objects.Planungsraum.geometries.length-3, geodata.objects.Planungsraum.geometries.length).reverse();
 
 	d3.select('#topList')
     .selectAll('table')
@@ -157,15 +128,12 @@ geodata.objects.Planungsraum.geometries.forEach(function(d) {
 	var cells = rows.selectAll('td')
 		.data(function(row){
 			return columns.map(function(column) {
-				return {column: column, value: row[column]};
+				return {column: column, value: row.properties[column]};
 			});
 		})
 		.enter()
 		.append('td')
 			.text(function(d) {return d.value; });
-
-		return top3;
-
 	}
 
 
