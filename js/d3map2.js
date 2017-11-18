@@ -83,16 +83,10 @@ geodata.objects.Planungsraum.geometries.forEach(function(d) {
 		})
 	});
 
-	color.domain(
-		[d3.min(geodata.objects.Planungsraum.geometries, function(d) {
+	
+	color.domain(d3.extent(geodata.objects.Planungsraum.geometries, function(d) {
 			return d.properties[IndicatorKeys[activeInd]];
-		}), 
-		d3.max(geodata.objects.Planungsraum.geometries, function(d) {
-			return d.properties[IndicatorKeys[activeInd]]
-		})
-		]
-		);
-
+		}));
 
 	function createTop3(columns) {
 
