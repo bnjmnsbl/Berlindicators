@@ -115,10 +115,16 @@ geodata.objects.Planungsraum.geometries.forEach(function(d) {
 		.enter()
 		.append('tr')
 			.on('mouseover', function() {
+				
+				svg.selectAll(".PLR-" + this.childNodes["0"].innerText.replace(/\s/g, '')).style("stroke-width", "2.5")
+				
 				d3.select(this).style('background-color', 'yellow');
-				d3.select
+				
 			})
-			.on('mouseout', function() {d3.select(this).style('background-color', 'white');})
+			.on('mouseout', function() {
+				d3.select(this).style('background-color', 'white');
+				svg.selectAll(".PLR-" + this.childNodes["0"].innerText.replace(/\s/g, '')).style("stroke-width", "0.5");
+			})
 	var cells = rows.selectAll('td')
 		.data(function(row){
 			return columns.map(function(column) {
@@ -131,7 +137,7 @@ geodata.objects.Planungsraum.geometries.forEach(function(d) {
 	}
 
 
-	createTop3(["Name", IndicatorKeys[activeInd]]);
+	
 		
 		d3.select("g")
 			.selectAll("path")
@@ -144,6 +150,7 @@ geodata.objects.Planungsraum.geometries.forEach(function(d) {
 		.attr("d", path)
 		.style("stroke", "#fff")
 		.style("stroke-width", "0.5")
+		.attr("class", function(d) { return "PLR-" + d.properties.Name.replace(/\s/g, '')})
 		.style("fill", function(d) {
 						
 			return color(d.properties[IndicatorKeys[activeInd]]);
@@ -169,6 +176,8 @@ geodata.objects.Planungsraum.geometries.forEach(function(d) {
         	d3.select(this)
 				.style("stroke-width", "0.5");
         });
+	createTop3(["Name", IndicatorKeys[activeInd]]);
+
 	};
 
 
